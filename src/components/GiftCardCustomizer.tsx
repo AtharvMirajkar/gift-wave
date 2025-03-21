@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
-import { Share2, Upload, X } from 'lucide-react';
+import { Share2, Upload, X, Download } from 'lucide-react';
+import { toPng } from 'html-to-image';
 import {
   FacebookShareButton,
   TwitterShareButton,
@@ -26,20 +27,60 @@ const GiftCardCustomizer = () => {
     (state: RootState) => state.giftCard
   );
   const [showShare, setShowShare] = useState(false);
+  const [cardImage, setCardImage] = useState<string | null>(null);
+  const [imageLoading, setImageLoading] = useState(false);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setImageLoading(true);
       const reader = new FileReader();
       reader.onloadend = () => {
-        dispatch(setImageUrl(reader.result as string));
+        const img = new Image();
+        img.onload = () => {
+          dispatch(setImageUrl(reader.result as string));
+          setImageLoading(false);
+        };
+        img.src = reader.result as string;
       };
       reader.readAsDataURL(file);
     }
+  }, [dispatch]);
+
+  const captureCard = async () => {
+    const cardElement = document.querySelector('.gift-card-preview');
+    if (cardElement) {
+      try {
+        const dataUrl = await toPng(cardElement as HTMLElement, {
+          quality: 0.95,
+          backgroundColor: 'white'
+        });
+        setCardImage(dataUrl);
+        return dataUrl;
+      } catch (error) {
+        console.error('Error capturing card:', error);
+        return null;
+      }
+    }
+    return null;
   };
 
-  const shareUrl = window.location.href;
-  const shareTitle = `Gift Card for ${recipientName}`;
+  const handleShare = async () => {
+    const imageUrl = await captureCard();
+    setShowShare(true);
+  };
+
+  const downloadCard = async () => {
+    const imageUrl = await captureCard();
+    if (imageUrl) {
+      const link = document.createElement('a');
+      link.download = `gift-card-${template}.png`;
+      link.href = imageUrl;
+      link.click();
+    }
+  };
+
+  const shareTitle = `A special gift card for ${recipientName || 'you'}!`;
 
   return (
     <motion.div
@@ -54,7 +95,8 @@ const GiftCardCustomizer = () => {
               <img
                 src={imageUrl}
                 alt="Custom gift card"
-                className="w-full h-64 object-cover rounded-lg"
+                className="w-full rounded-lg"
+                style={{ maxHeight: '400px', objectFit: 'contain' }}
               />
               <button
                 onClick={() => dispatch(setImageUrl(''))}
@@ -67,12 +109,15 @@ const GiftCardCustomizer = () => {
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
               <label className="cursor-pointer block">
                 <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                <span className="mt-2 block text-sm text-gray-600">Upload an image</span>
+                <span className="mt-2 block text-sm text-gray-600">
+                  {imageLoading ? 'Processing...' : 'Upload an image'}
+                </span>
                 <input
                   type="file"
                   className="hidden"
                   accept="image/*"
                   onChange={handleImageUpload}
+                  disabled={imageLoading}
                 />
               </label>
             </div>
@@ -118,7 +163,16 @@ const GiftCardCustomizer = () => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setShowShare(!showShare)}
+            onClick={downloadCard}
+            className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleShare}
             className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
           >
             <Share2 className="w-4 h-4 mr-2" />
@@ -126,22 +180,22 @@ const GiftCardCustomizer = () => {
           </motion.button>
         </div>
 
-        {showShare && (
+        {showShare && cardImage && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex space-x-4 justify-center pt-4"
           >
-            <FacebookShareButton url={shareUrl} quote={shareTitle}>
+            <FacebookShareButton url={cardImage} quote={shareTitle}>
               <FacebookIcon size={32} round />
             </FacebookShareButton>
-            <TwitterShareButton url={shareUrl} title={shareTitle}>
+            <TwitterShareButton url={cardImage} title={shareTitle}>
               <TwitterIcon size={32} round />
             </TwitterShareButton>
-            <WhatsappShareButton url={shareUrl} title={shareTitle}>
+            <WhatsappShareButton url={cardImage} title={shareTitle}>
               <WhatsappIcon size={32} round />
             </WhatsappShareButton>
-            <EmailShareButton url={shareUrl} subject={shareTitle}>
+            <EmailShareButton url={cardImage} subject={shareTitle}>
               <EmailIcon size={32} round />
             </EmailShareButton>
           </motion.div>

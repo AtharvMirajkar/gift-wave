@@ -62,7 +62,9 @@ const Home = () => {
             <h2 className="text-3xl font-bold text-center mb-12">Customize Your Gift Card</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               <GiftCardCustomizer />
-              <GiftCardPreview />
+              <div className="gift-card-preview">
+                <GiftCardPreview />
+              </div>
             </div>
           </div>
         </section>
