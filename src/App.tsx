@@ -6,6 +6,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Contact from './pages/Contact';
+import EditCard from './pages/EditCard';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/edit/:template" element={<EditCard />} />
             </Routes>
           </main>
           <Footer />

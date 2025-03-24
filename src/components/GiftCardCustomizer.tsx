@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { Share2, Upload, X, Download } from 'lucide-react';
@@ -27,8 +27,17 @@ const GiftCardCustomizer = () => {
     (state: RootState) => state.giftCard
   );
   const [showShare, setShowShare] = useState(false);
-  const [cardImage, setCardImage] = useState<string | null>(null);
+  const [cardImageUrl, setCardImageUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
+
+  // Cleanup object URL when component unmounts or when cardImageUrl changes
+  useEffect(() => {
+    return () => {
+      if (cardImageUrl) {
+        URL.revokeObjectURL(cardImageUrl);
+      }
+    };
+  }, [cardImageUrl]);
 
   const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -55,8 +64,20 @@ const GiftCardCustomizer = () => {
           quality: 0.95,
           backgroundColor: 'white'
         });
-        setCardImage(dataUrl);
-        return dataUrl;
+
+        // Convert base64 to blob
+        const response = await fetch(dataUrl);
+        const blob = await response.blob();
+        
+        // Create object URL
+        const objectUrl = URL.createObjectURL(blob);
+        
+        // Update state with new URL
+        if (cardImageUrl) {
+          URL.revokeObjectURL(cardImageUrl);
+        }
+        setCardImageUrl(objectUrl);
+        return objectUrl;
       } catch (error) {
         console.error('Error capturing card:', error);
         return null;
@@ -66,7 +87,7 @@ const GiftCardCustomizer = () => {
   };
 
   const handleShare = async () => {
-    const imageUrl = await captureCard();
+    await captureCard();
     setShowShare(true);
   };
 
@@ -81,6 +102,8 @@ const GiftCardCustomizer = () => {
   };
 
   const shareTitle = `A special gift card for ${recipientName || 'you'}!`;
+  // Use window.location.origin to get the base URL of the current page
+  const shareUrl = cardImageUrl || window.location.origin;
 
   return (
     <motion.div
@@ -180,22 +203,22 @@ const GiftCardCustomizer = () => {
           </motion.button>
         </div>
 
-        {showShare && cardImage && (
+        {showShare && cardImageUrl && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex space-x-4 justify-center pt-4"
           >
-            <FacebookShareButton url={cardImage} quote={shareTitle}>
+            <FacebookShareButton url={shareUrl} quote={shareTitle}>
               <FacebookIcon size={32} round />
             </FacebookShareButton>
-            <TwitterShareButton url={cardImage} title={shareTitle}>
+            <TwitterShareButton url={shareUrl} title={shareTitle}>
               <TwitterIcon size={32} round />
             </TwitterShareButton>
-            <WhatsappShareButton url={cardImage} title={shareTitle}>
+            <WhatsappShareButton url={shareUrl} title={shareTitle}>
               <WhatsappIcon size={32} round />
             </WhatsappShareButton>
-            <EmailShareButton url={cardImage} subject={shareTitle}>
+            <EmailShareButton url={shareUrl} subject={shareTitle}>
               <EmailIcon size={32} round />
             </EmailShareButton>
           </motion.div>
