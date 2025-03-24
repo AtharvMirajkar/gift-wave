@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
-import { Share2, Upload, X, Download } from 'lucide-react';
+import { Share2, Upload, X, Download, Palette, RotateCcw } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import {
   FacebookShareButton,
@@ -19,18 +19,29 @@ import {
   setRecipientName,
   setSenderName,
   setImageUrl,
+  setPrimaryColor,
+  setSecondaryColor,
+  setTextColor,
+  resetColors,
 } from '../store/giftCardSlice';
 
 const GiftCardCustomizer = () => {
   const dispatch = useDispatch();
-  const { template, customText, recipientName, senderName, imageUrl } = useSelector(
-    (state: RootState) => state.giftCard
-  );
+  const {
+    template,
+    customText,
+    recipientName,
+    senderName,
+    imageUrl,
+    primaryColor,
+    secondaryColor,
+    textColor,
+  } = useSelector((state: RootState) => state.giftCard);
   const [showShare, setShowShare] = useState(false);
   const [cardImageUrl, setCardImageUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
-  // Cleanup object URL when component unmounts or when cardImageUrl changes
   useEffect(() => {
     return () => {
       if (cardImageUrl) {
@@ -64,15 +75,9 @@ const GiftCardCustomizer = () => {
           quality: 0.95,
           backgroundColor: 'white'
         });
-
-        // Convert base64 to blob
         const response = await fetch(dataUrl);
         const blob = await response.blob();
-        
-        // Create object URL
         const objectUrl = URL.createObjectURL(blob);
-        
-        // Update state with new URL
         if (cardImageUrl) {
           URL.revokeObjectURL(cardImageUrl);
         }
@@ -101,9 +106,14 @@ const GiftCardCustomizer = () => {
     }
   };
 
+  const handleResetColors = () => {
+    dispatch(resetColors());
+  };
+
   const shareTitle = `A special gift card for ${recipientName || 'you'}!`;
-  // Use window.location.origin to get the base URL of the current page
   const shareUrl = cardImageUrl || window.location.origin;
+
+  const inputClasses = "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 px-4 py-3";
 
   return (
     <motion.div
@@ -149,36 +159,94 @@ const GiftCardCustomizer = () => {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Recipient's Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Recipient's Name</label>
             <input
               type="text"
               value={recipientName}
               onChange={(e) => dispatch(setRecipientName(e.target.value))}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              className={inputClasses}
               placeholder="Enter recipient's name"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Your Message</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Your Message</label>
             <textarea
               value={customText}
               onChange={(e) => dispatch(setCustomText(e.target.value))}
               rows={4}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              className={`${inputClasses} resize-none`}
               placeholder="Write your message here..."
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Your Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
             <input
               type="text"
               value={senderName}
               onChange={(e) => dispatch(setSenderName(e.target.value))}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              className={inputClasses}
               placeholder="Enter your name"
             />
+          </div>
+
+          <div>
+            <button
+              onClick={() => setShowColorPicker(!showColorPicker)}
+              className="flex items-center space-x-2 text-sm font-medium text-gray-700"
+            >
+              <Palette size={16} />
+              <span>{showColorPicker ? 'Hide Color Options' : 'Customize Colors'}</span>
+            </button>
+            
+            {showColorPicker && (
+              <div className="mt-4 space-y-4 p-4 bg-gray-50 rounded-lg">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-sm font-medium text-gray-700">Color Customization</h3>
+                  <button
+                    onClick={handleResetColors}
+                    className="flex items-center space-x-1 text-sm text-gray-600 hover:text-purple-600 transition-colors"
+                  >
+                    <RotateCcw size={14} />
+                    <span>Reset Colors</span>
+                  </button>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Primary Color
+                  </label>
+                  <input
+                    type="color"
+                    value={primaryColor}
+                    onChange={(e) => dispatch(setPrimaryColor(e.target.value))}
+                    className="block w-full h-10 rounded-md cursor-pointer"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Secondary Color
+                  </label>
+                  <input
+                    type="color"
+                    value={secondaryColor}
+                    onChange={(e) => dispatch(setSecondaryColor(e.target.value))}
+                    className="block w-full h-10 rounded-md cursor-pointer"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Text Color
+                  </label>
+                  <input
+                    type="color"
+                    value={textColor}
+                    onChange={(e) => dispatch(setTextColor(e.target.value))}
+                    className="block w-full h-10 rounded-md cursor-pointer"
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
