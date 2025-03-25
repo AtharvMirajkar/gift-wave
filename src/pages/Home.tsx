@@ -20,6 +20,12 @@ const templates = [
     imageUrl: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30',
     title: 'Special Event',
     description: 'Design stunning cards for any occasion with customizable templates and themes.'
+  },
+  {
+    type: 'custom',
+    imageUrl: 'https://images.unsplash.com/photo-1513151233558-d860c5398176',
+    title: 'Custom Design',
+    description: 'Create your own unique card by selecting event type, images, and customizing every detail.'
   }
 ];
 
@@ -41,7 +47,7 @@ const Home = () => {
         <div className="container mx-auto px-6">
           <h2 className="text-3xl font-bold text-center mb-4">Choose Your Template</h2>
           <p className="text-center text-gray-600 mb-12">Select a template to start creating your personalized gift card</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {templates.map((template) => (
               <CardTemplate
                 key={template.type}

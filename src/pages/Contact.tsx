@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin } from 'lucide-react';
 
+const inputClasses = "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 px-4 py-2";
+
 const Contact = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -20,21 +22,21 @@ const Contact = () => {
                   <label className="block text-sm font-medium text-gray-700">Name</label>
                   <input
                     type="text"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                    className={inputClasses}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Email</label>
                   <input
                     type="email"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                    className={inputClasses}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Message</label>
                   <textarea
                     rows={4}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                    className={inputClasses}
                   ></textarea>
                 </div>
                 <button

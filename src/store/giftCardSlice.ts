@@ -9,6 +9,8 @@ interface GiftCardState {
   primaryColor: string;
   secondaryColor: string;
   textColor: string;
+  selectedEvent: string;
+  selectedImage: string;
 }
 
 const getDefaultColors = (template: string) => {
@@ -31,6 +33,12 @@ const getDefaultColors = (template: string) => {
         secondaryColor: '#6366F1',
         textColor: '#FFFFFF'
       };
+    case 'custom':
+      return {
+        primaryColor: '#10B981',
+        secondaryColor: '#3B82F6',
+        textColor: '#FFFFFF'
+      };
     default:
       return {
         primaryColor: '#EC4899',
@@ -46,6 +54,8 @@ const initialState: GiftCardState = {
   recipientName: '',
   senderName: '',
   imageUrl: '',
+  selectedEvent: '',
+  selectedImage: '',
   ...getDefaultColors('')
 };
 
@@ -87,6 +97,12 @@ const giftCardSlice = createSlice({
       state.secondaryColor = defaultColors.secondaryColor;
       state.textColor = defaultColors.textColor;
     },
+    setSelectedEvent: (state, action: PayloadAction<string>) => {
+      state.selectedEvent = action.payload;
+    },
+    setSelectedImage: (state, action: PayloadAction<string>) => {
+      state.selectedImage = action.payload;
+    },
   },
 });
 
@@ -100,5 +116,7 @@ export const {
   setSecondaryColor,
   setTextColor,
   resetColors,
+  setSelectedEvent,
+  setSelectedImage,
 } = giftCardSlice.actions;
 export default giftCardSlice.reducer;

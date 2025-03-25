@@ -201,7 +201,7 @@ const GiftCardCustomizer = () => {
             </button>
             
             {showColorPicker && (
-              <div className="mt-4 space-y-4 p-4 bg-gray-50 rounded-lg">
+              <div className="mt-6 space-y-4 p-4 bg-gray-50 rounded-lg">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-sm font-medium text-gray-700">Color Customization</h3>
                   <button
