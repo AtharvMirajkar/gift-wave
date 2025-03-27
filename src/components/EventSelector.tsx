@@ -48,6 +48,42 @@ const eventOptions: EventOption[] = [
       { url: 'https://images.unsplash.com/photo-1484154218962-a197022b5858', alt: 'Living room' },
       { url: 'https://images.unsplash.com/photo-1560185127-6ed189bf02f4', alt: 'House keys' },
     ]
+  },
+  {
+    type: 'birthday',
+    title: 'Birthday',
+    images: [
+      { url: 'https://images.unsplash.com/photo-1558636508-e0db3814bd1d', alt: 'Birthday cake' },
+      { url: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d', alt: 'Birthday balloons' },
+      { url: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3', alt: 'Birthday party' },
+    ]
+  },
+  {
+    type: 'anniversary',
+    title: 'Anniversary',
+    images: [
+      { url: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b', alt: 'Anniversary celebration' },
+      { url: 'https://images.unsplash.com/photo-1518599807935-37015b9cefcb', alt: 'Romantic dinner' },
+      { url: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2', alt: 'Love hearts' },
+    ]
+  },
+  {
+    type: 'congratulations',
+    title: 'Congratulations',
+    images: [
+      { url: 'https://images.unsplash.com/photo-1531686264889-56fdcabd163f', alt: 'Success celebration' },
+      { url: 'https://images.unsplash.com/photo-1513151233558-d860c5398176', alt: 'Achievement' },
+      { url: 'https://images.unsplash.com/photo-1586473219010-2ffc57b0d282', alt: 'Celebration' },
+    ]
+  },
+  {
+    type: 'getWell',
+    title: 'Get Well',
+    images: [
+      { url: 'https://images.unsplash.com/photo-1606761568499-6d2451b23c66', alt: 'Flowers' },
+      { url: 'https://images.unsplash.com/photo-1549576490-b0b4831ef60a', alt: 'Peaceful scene' },
+      { url: 'https://images.unsplash.com/photo-1517241034903-9a4c3ab12f00', alt: 'Healing' },
+    ]
   }
 ];
 

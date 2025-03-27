@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import GiftCardCustomizer from '../components/GiftCardCustomizer';
@@ -11,12 +11,16 @@ const EditCard = () => {
   const { template } = useParams();
   const selectedTemplate = useSelector((state: RootState) => state.giftCard.template);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   if (!template || !['birthday', 'anniversary', 'event', 'custom'].includes(template)) {
     return <Navigate to="/" replace />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white py-12">
+    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white py-12 pb-24">
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -34,10 +38,10 @@ const EditCard = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div className="order-2 lg:order-1">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+            <div className="order-2 lg:order-1 space-y-8">
               {template === 'custom' && <EventSelector />}
-              <div className="mt-8">
+              <div>
                 <GiftCardCustomizer />
               </div>
             </div>
