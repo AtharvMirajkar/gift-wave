@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
-import { Share2, Upload, X, Download, Palette, RotateCcw } from 'lucide-react';
+import { Share2, Upload, X, Download, Palette, RotateCcw, MessageSquare } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import {
   FacebookShareButton,
@@ -25,6 +25,49 @@ import {
   resetColors,
 } from '../store/giftCardSlice';
 
+const predefinedMessages = {
+  graduation: [
+    "Congratulations on your graduation! Your hard work and dedication have paid off. Here's to your bright future ahead! 🎓",
+    "As you graduate, remember that this is just the beginning of your amazing journey. Wishing you success in all your future endeavors! 🌟",
+    "Your graduation is a testament to your perseverance and determination. May your future be filled with endless possibilities! 🎊"
+  ],
+  wedding: [
+    "Wishing you a lifetime of love, laughter, and happiness together. Congratulations on your special day! 💑",
+    "May your love story continue to grow more beautiful with each passing day. Here's to a wonderful journey ahead! 💍",
+    "Celebrating your love and the beautiful beginning of your new life together. Congratulations! 💝"
+  ],
+  newBaby: [
+    "Welcome to the world, little one! Congratulations on your precious bundle of joy! 👶",
+    "Wishing your family endless love, joy, and precious moments with your new arrival! 🍼",
+    "Congratulations on your new baby! May your home be filled with endless cuddles and sweet giggles! 🎀"
+  ],
+  housewarming: [
+    "Congratulations on your new home! May it be filled with love, laughter, and countless happy memories! 🏠",
+    "Here's to new beginnings in your beautiful new home. Wishing you many years of happiness here! 🔑",
+    "May your new home be blessed with warmth, love, and wonderful moments to cherish! 🌟"
+  ],
+  birthday: [
+    "Happy Birthday! May your day be filled with joy, laughter, and unforgettable moments! 🎂",
+    "Wishing you a fantastic birthday celebration filled with all the things that make you smile! 🎈",
+    "Here's to another year of amazing adventures and beautiful memories. Happy Birthday! 🎉"
+  ],
+  anniversary: [
+    "Happy Anniversary! Celebrating the beautiful love story you continue to write together! 💑",
+    "Wishing you both a day filled with sweet memories and dreams for the future ahead! 💕",
+    "Here's to another year of sharing love, laughter, and life's precious moments! 💝"
+  ],
+  congratulations: [
+    "Congratulations on your amazing achievement! Your hard work and dedication truly paid off! 🌟",
+    "Here's to celebrating your success and all the wonderful accomplishments ahead! 🎉",
+    "You did it! Wishing you continued success in all your future endeavors! 🏆"
+  ],
+  getWell: [
+    "Sending you warm wishes and positive thoughts for a speedy recovery! 🌸",
+    "Get well soon! May each day bring you renewed strength and better health! 💐",
+    "Thinking of you and hoping you're feeling better with each passing day! ❤️"
+  ]
+};
+
 const GiftCardCustomizer = () => {
   const dispatch = useDispatch();
   const {
@@ -36,11 +79,13 @@ const GiftCardCustomizer = () => {
     primaryColor,
     secondaryColor,
     textColor,
+    selectedEvent,
   } = useSelector((state: RootState) => state.giftCard);
   const [showShare, setShowShare] = useState(false);
   const [cardImageUrl, setCardImageUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showPredefinedMessages, setShowPredefinedMessages] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -110,6 +155,11 @@ const GiftCardCustomizer = () => {
     dispatch(resetColors());
   };
 
+  const handleSelectMessage = (message: string) => {
+    dispatch(setCustomText(message));
+    setShowPredefinedMessages(false);
+  };
+
   const shareTitle = `A special gift card for ${recipientName || 'you'}!`;
   const shareUrl = cardImageUrl || window.location.origin;
 
@@ -169,15 +219,46 @@ const GiftCardCustomizer = () => {
             />
           </div>
 
-          <div>
+          <div className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-2">Your Message</label>
-            <textarea
-              value={customText}
-              onChange={(e) => dispatch(setCustomText(e.target.value))}
-              rows={4}
-              className={`${inputClasses} resize-none`}
-              placeholder="Write your message here..."
-            />
+            <div className="relative">
+              <textarea
+                value={customText}
+                onChange={(e) => dispatch(setCustomText(e.target.value))}
+                rows={4}
+                className={`${inputClasses} resize-none`}
+                placeholder="Write your message here..."
+              />
+              {selectedEvent && predefinedMessages[selectedEvent as keyof typeof predefinedMessages] && (
+                <button
+                  onClick={() => setShowPredefinedMessages(!showPredefinedMessages)}
+                  className="absolute top-2 right-2 p-2 text-gray-500 hover:text-purple-600 transition-colors"
+                  title="Use predefined message"
+                >
+                  <MessageSquare size={20} />
+                </button>
+              )}
+            </div>
+            {showPredefinedMessages && selectedEvent && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="absolute z-10 mt-2 w-full bg-white rounded-lg shadow-lg border border-gray-200"
+              >
+                <div className="p-2">
+                  {predefinedMessages[selectedEvent as keyof typeof predefinedMessages]?.map((message, index) => (
+                    <motion.button
+                      key={index}
+                      whileHover={{ scale: 1.01 }}
+                      onClick={() => handleSelectMessage(message)}
+                      className="w-full text-left p-3 hover:bg-purple-50 rounded-md transition-colors text-sm"
+                    >
+                      {message}
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
           </div>
 
           <div>
