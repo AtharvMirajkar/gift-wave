@@ -1,8 +1,16 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { motion } from 'framer-motion';
-import { Share2, Upload, X, Download, Palette, RotateCcw, MessageSquare } from 'lucide-react';
-import { toPng } from 'html-to-image';
+import React, { useState, useCallback, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { motion } from "framer-motion";
+import {
+  Share2,
+  Upload,
+  X,
+  Download,
+  Palette,
+  RotateCcw,
+  MessageSquare,
+} from "lucide-react";
+import { toPng } from "html-to-image";
 import {
   FacebookShareButton,
   TwitterShareButton,
@@ -12,8 +20,8 @@ import {
   TwitterIcon,
   WhatsappIcon,
   EmailIcon,
-} from 'react-share';
-import { RootState } from '../store/store';
+} from "react-share";
+import { RootState } from "../store/store";
 import {
   setCustomText,
   setRecipientName,
@@ -23,49 +31,49 @@ import {
   setSecondaryColor,
   setTextColor,
   resetColors,
-} from '../store/giftCardSlice';
+} from "../store/giftCardSlice";
 
 const predefinedMessages = {
   graduation: [
     "Congratulations on your graduation! Your hard work and dedication have paid off. Here's to your bright future ahead! 🎓",
     "As you graduate, remember that this is just the beginning of your amazing journey. Wishing you success in all your future endeavors! 🌟",
-    "Your graduation is a testament to your perseverance and determination. May your future be filled with endless possibilities! 🎊"
+    "Your graduation is a testament to your perseverance and determination. May your future be filled with endless possibilities! 🎊",
   ],
   wedding: [
     "Wishing you a lifetime of love, laughter, and happiness together. Congratulations on your special day! 💑",
     "May your love story continue to grow more beautiful with each passing day. Here's to a wonderful journey ahead! 💍",
-    "Celebrating your love and the beautiful beginning of your new life together. Congratulations! 💝"
+    "Celebrating your love and the beautiful beginning of your new life together. Congratulations! 💝",
   ],
   newBaby: [
     "Welcome to the world, little one! Congratulations on your precious bundle of joy! 👶",
     "Wishing your family endless love, joy, and precious moments with your new arrival! 🍼",
-    "Congratulations on your new baby! May your home be filled with endless cuddles and sweet giggles! 🎀"
+    "Congratulations on your new baby! May your home be filled with endless cuddles and sweet giggles! 🎀",
   ],
   housewarming: [
     "Congratulations on your new home! May it be filled with love, laughter, and countless happy memories! 🏠",
     "Here's to new beginnings in your beautiful new home. Wishing you many years of happiness here! 🔑",
-    "May your new home be blessed with warmth, love, and wonderful moments to cherish! 🌟"
+    "May your new home be blessed with warmth, love, and wonderful moments to cherish! 🌟",
   ],
   birthday: [
     "Happy Birthday! May your day be filled with joy, laughter, and unforgettable moments! 🎂",
     "Wishing you a fantastic birthday celebration filled with all the things that make you smile! 🎈",
-    "Here's to another year of amazing adventures and beautiful memories. Happy Birthday! 🎉"
+    "Here's to another year of amazing adventures and beautiful memories. Happy Birthday! 🎉",
   ],
   anniversary: [
     "Happy Anniversary! Celebrating the beautiful love story you continue to write together! 💑",
     "Wishing you both a day filled with sweet memories and dreams for the future ahead! 💕",
-    "Here's to another year of sharing love, laughter, and life's precious moments! 💝"
+    "Here's to another year of sharing love, laughter, and life's precious moments! 💝",
   ],
   congratulations: [
     "Congratulations on your amazing achievement! Your hard work and dedication truly paid off! 🌟",
     "Here's to celebrating your success and all the wonderful accomplishments ahead! 🎉",
-    "You did it! Wishing you continued success in all your future endeavors! 🏆"
+    "You did it! Wishing you continued success in all your future endeavors! 🏆",
   ],
   getWell: [
     "Sending you warm wishes and positive thoughts for a speedy recovery! 🌸",
     "Get well soon! May each day bring you renewed strength and better health! 💐",
-    "Thinking of you and hoping you're feeling better with each passing day! ❤️"
-  ]
+    "Thinking of you and hoping you're feeling better with each passing day! ❤️",
+  ],
 };
 
 const GiftCardCustomizer = () => {
@@ -86,6 +94,7 @@ const GiftCardCustomizer = () => {
   const [imageLoading, setImageLoading] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showPredefinedMessages, setShowPredefinedMessages] = useState(false);
+  const [shareableUrl, setShareableUrl] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -95,33 +104,63 @@ const GiftCardCustomizer = () => {
     };
   }, [cardImageUrl]);
 
-  const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageLoading(true);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const img = new Image();
-        img.onload = () => {
-          dispatch(setImageUrl(reader.result as string));
-          setImageLoading(false);
+  const uploadToCloudinary = async (blob: Blob): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", blob);
+    formData.append(
+      "upload_preset",
+      import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+    );
+
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${
+        import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+      }/image/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+    return data.secure_url;
+  };
+
+  const handleImageUpload = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        setImageLoading(true);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const img = new Image();
+          img.onload = () => {
+            dispatch(setImageUrl(reader.result as string));
+            setImageLoading(false);
+          };
+          img.src = reader.result as string;
         };
-        img.src = reader.result as string;
-      };
-      reader.readAsDataURL(file);
-    }
-  }, [dispatch]);
+        reader.readAsDataURL(file);
+      }
+    },
+    [dispatch]
+  );
 
   const captureCard = async () => {
-    const cardElement = document.querySelector('.gift-card-preview');
+    const cardElement = document.querySelector(".gift-card-preview");
     if (cardElement) {
       try {
         const dataUrl = await toPng(cardElement as HTMLElement, {
           quality: 0.95,
-          backgroundColor: 'white'
+          backgroundColor: "white",
         });
         const response = await fetch(dataUrl);
         const blob = await response.blob();
+
+        // Upload to Cloudinary
+        const cloudinaryUrl = await uploadToCloudinary(blob);
+        setShareableUrl(cloudinaryUrl);
+
         const objectUrl = URL.createObjectURL(blob);
         if (cardImageUrl) {
           URL.revokeObjectURL(cardImageUrl);
@@ -129,7 +168,7 @@ const GiftCardCustomizer = () => {
         setCardImageUrl(objectUrl);
         return objectUrl;
       } catch (error) {
-        console.error('Error capturing card:', error);
+        console.error("Error capturing card:", error);
         return null;
       }
     }
@@ -144,7 +183,7 @@ const GiftCardCustomizer = () => {
   const downloadCard = async () => {
     const imageUrl = await captureCard();
     if (imageUrl) {
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.download = `gift-card-${template}.png`;
       link.href = imageUrl;
       link.click();
@@ -160,10 +199,11 @@ const GiftCardCustomizer = () => {
     setShowPredefinedMessages(false);
   };
 
-  const shareTitle = `A special gift card for ${recipientName || 'you'}!`;
-  const shareUrl = cardImageUrl || window.location.origin;
+  const shareTitle = `A special gift card for ${recipientName || "you"}!`;
+  const shareUrl = shareableUrl || window.location.origin;
 
-  const inputClasses = "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 px-4 py-3";
+  const inputClasses =
+    "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 px-4 py-3";
 
   return (
     <motion.div
@@ -179,10 +219,10 @@ const GiftCardCustomizer = () => {
                 src={imageUrl}
                 alt="Custom gift card"
                 className="w-full rounded-lg"
-                style={{ maxHeight: '400px', objectFit: 'contain' }}
+                style={{ maxHeight: "400px", objectFit: "contain" }}
               />
               <button
-                onClick={() => dispatch(setImageUrl(''))}
+                onClick={() => dispatch(setImageUrl(""))}
                 className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
               >
                 <X size={16} />
@@ -193,7 +233,7 @@ const GiftCardCustomizer = () => {
               <label className="cursor-pointer block">
                 <Upload className="mx-auto h-12 w-12 text-gray-400" />
                 <span className="mt-2 block text-sm text-gray-600">
-                  {imageLoading ? 'Processing...' : 'Upload an image'}
+                  {imageLoading ? "Processing..." : "Upload an image"}
                 </span>
                 <input
                   type="file"
@@ -209,7 +249,9 @@ const GiftCardCustomizer = () => {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Recipient's Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Recipient's Name
+            </label>
             <input
               type="text"
               value={recipientName}
@@ -220,7 +262,9 @@ const GiftCardCustomizer = () => {
           </div>
 
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Your Message</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Your Message
+            </label>
             <div className="relative">
               <textarea
                 value={customText}
@@ -229,15 +273,20 @@ const GiftCardCustomizer = () => {
                 className={`${inputClasses} resize-none`}
                 placeholder="Write your message here..."
               />
-              {selectedEvent && predefinedMessages[selectedEvent as keyof typeof predefinedMessages] && (
-                <button
-                  onClick={() => setShowPredefinedMessages(!showPredefinedMessages)}
-                  className="absolute top-2 right-2 p-2 text-gray-500 hover:text-purple-600 transition-colors"
-                  title="Use predefined message"
-                >
-                  <MessageSquare size={20} />
-                </button>
-              )}
+              {selectedEvent &&
+                predefinedMessages[
+                  selectedEvent as keyof typeof predefinedMessages
+                ] && (
+                  <button
+                    onClick={() =>
+                      setShowPredefinedMessages(!showPredefinedMessages)
+                    }
+                    className="absolute top-2 right-2 p-2 text-gray-500 hover:text-purple-600 transition-colors"
+                    title="Use predefined message"
+                  >
+                    <MessageSquare size={20} />
+                  </button>
+                )}
             </div>
             {showPredefinedMessages && selectedEvent && (
               <motion.div
@@ -246,7 +295,9 @@ const GiftCardCustomizer = () => {
                 className="absolute z-10 mt-2 w-full bg-white rounded-lg shadow-lg border border-gray-200"
               >
                 <div className="p-2">
-                  {predefinedMessages[selectedEvent as keyof typeof predefinedMessages]?.map((message, index) => (
+                  {predefinedMessages[
+                    selectedEvent as keyof typeof predefinedMessages
+                  ]?.map((message, index) => (
                     <motion.button
                       key={index}
                       whileHover={{ scale: 1.01 }}
@@ -262,7 +313,9 @@ const GiftCardCustomizer = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Your Name
+            </label>
             <input
               type="text"
               value={senderName}
@@ -278,13 +331,17 @@ const GiftCardCustomizer = () => {
               className="flex items-center space-x-2 text-sm font-medium text-gray-700"
             >
               <Palette size={16} />
-              <span>{showColorPicker ? 'Hide Color Options' : 'Customize Colors'}</span>
+              <span>
+                {showColorPicker ? "Hide Color Options" : "Customize Colors"}
+              </span>
             </button>
-            
+
             {showColorPicker && (
               <div className="mt-6 space-y-4 p-4 bg-gray-50 rounded-lg">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-sm font-medium text-gray-700">Color Customization</h3>
+                  <h3 className="text-sm font-medium text-gray-700">
+                    Color Customization
+                  </h3>
                   <button
                     onClick={handleResetColors}
                     className="flex items-center space-x-1 text-sm text-gray-600 hover:text-purple-600 transition-colors"
@@ -311,7 +368,9 @@ const GiftCardCustomizer = () => {
                   <input
                     type="color"
                     value={secondaryColor}
-                    onChange={(e) => dispatch(setSecondaryColor(e.target.value))}
+                    onChange={(e) =>
+                      dispatch(setSecondaryColor(e.target.value))
+                    }
                     className="block w-full h-10 rounded-md cursor-pointer"
                   />
                 </div>
@@ -352,7 +411,7 @@ const GiftCardCustomizer = () => {
           </motion.button>
         </div>
 
-        {showShare && cardImageUrl && (
+        {showShare && shareableUrl && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
