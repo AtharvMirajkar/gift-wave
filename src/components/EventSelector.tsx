@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useDispatch } from 'react-redux';
 import { setSelectedEvent, setSelectedImage, setImageUrl } from '../store/giftCardSlice';
@@ -90,6 +90,7 @@ const eventOptions: EventOption[] = [
 const EventSelector: React.FC = () => {
   const dispatch = useDispatch();
   const [selectedEventType, setSelectedEventType] = React.useState<string>('');
+  const [loadingImages, setLoadingImages] = useState<{ [key: string]: boolean }>({});
 
   const handleEventSelect = (eventType: string) => {
     setSelectedEventType(eventType);
@@ -99,6 +100,14 @@ const EventSelector: React.FC = () => {
   const handleImageSelect = (imageUrl: string) => {
     dispatch(setSelectedImage(imageUrl));
     dispatch(setImageUrl(imageUrl));
+  };
+
+  const handleImageLoad = (imageUrl: string) => {
+    setLoadingImages(prev => ({ ...prev, [imageUrl]: false }));
+  };
+
+  const handleImageLoadStart = (imageUrl: string) => {
+    setLoadingImages(prev => ({ ...prev, [imageUrl]: true }));
   };
 
   return (
@@ -141,10 +150,16 @@ const EventSelector: React.FC = () => {
                   className="cursor-pointer relative rounded-lg overflow-hidden"
                   onClick={() => handleImageSelect(image.url)}
                 >
+                  {loadingImages[image.url] && (
+                    <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+                  )}
                   <img
                     src={image.url}
                     alt={image.alt}
                     className="w-full h-48 object-cover"
+                    onLoadStart={() => handleImageLoadStart(image.url)}
+                    onLoad={() => handleImageLoad(image.url)}
+                    style={{ opacity: loadingImages[image.url] ? 0 : 1 }}
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-20 hover:bg-opacity-30 transition-opacity" />
                 </motion.div>

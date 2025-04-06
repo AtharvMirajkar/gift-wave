@@ -7,6 +7,7 @@ import { Gift, Heart, PartyPopper, Sparkles } from "lucide-react";
 const GiftCardPreview = () => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [imageHeight, setImageHeight] = useState<number | null>(null);
+  const [imageLoading, setImageLoading] = useState(false);
   const {
     template,
     customText,
@@ -20,15 +21,18 @@ const GiftCardPreview = () => {
 
   useEffect(() => {
     if (imageUrl) {
+      setImageLoading(true);
       const img = new Image();
       img.onload = () => {
         const aspectRatio = img.height / img.width;
         const width = cardRef.current?.clientWidth || 0;
         setImageHeight(width * aspectRatio);
+        setImageLoading(false);
       };
       img.src = imageUrl;
     } else {
       setImageHeight(null);
+      setImageLoading(false);
     }
   }, [imageUrl]);
 
@@ -105,18 +109,22 @@ const GiftCardPreview = () => {
       }}
     >
       <div className="relative flex flex-col">
-        {imageUrl && (
-          <div
-            className="relative w-full overflow-hidden"
-            style={{ height: imageHeight ? `${imageHeight}px` : "auto" }}
-          >
-            <img
-              src={imageUrl}
-              alt="Gift card"
-              className="w-full h-full object-contain"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
-          </div>
+        {imageLoading ? (
+          <div className="w-full h-64 bg-gray-200 animate-pulse rounded-t-xl" />
+        ) : (
+          imageUrl && (
+            <div
+              className="relative w-full overflow-hidden"
+              style={{ height: imageHeight ? `${imageHeight}px` : "auto" }}
+            >
+              <img
+                src={imageUrl}
+                alt="Gift card"
+                className="w-full h-full object-contain"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
+            </div>
+          )
         )}
         <div
           className="relative p-4 sm:p-6 md:p-8 flex flex-col justify-between backdrop-blur-sm"

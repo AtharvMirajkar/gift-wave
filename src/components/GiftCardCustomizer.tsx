@@ -9,6 +9,7 @@ import {
   Palette,
   RotateCcw,
   MessageSquare,
+  Loader2,
 } from "lucide-react";
 import { toPng } from "html-to-image";
 import {
@@ -95,6 +96,7 @@ const GiftCardCustomizer = () => {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showPredefinedMessages, setShowPredefinedMessages] = useState(false);
   const [shareableUrl, setShareableUrl] = useState<string | null>(null);
+  const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -176,8 +178,10 @@ const GiftCardCustomizer = () => {
   };
 
   const handleShare = async () => {
+    setIsSharing(true);
     await captureCard();
     setShowShare(true);
+    setIsSharing(false);
   };
 
   const downloadCard = async () => {
@@ -231,10 +235,21 @@ const GiftCardCustomizer = () => {
           ) : (
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
               <label className="cursor-pointer block">
-                <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                <span className="mt-2 block text-sm text-gray-600">
-                  {imageLoading ? "Processing..." : "Upload an image"}
-                </span>
+                {imageLoading ? (
+                  <div className="flex flex-col items-center">
+                    <Loader2 className="w-12 h-12 text-gray-400 animate-spin" />
+                    <span className="mt-2 block text-sm text-gray-600">
+                      Processing...
+                    </span>
+                  </div>
+                ) : (
+                  <>
+                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                    <span className="mt-2 block text-sm text-gray-600">
+                      Upload an image
+                    </span>
+                  </>
+                )}
                 <input
                   type="file"
                   className="hidden"
@@ -404,10 +419,20 @@ const GiftCardCustomizer = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleShare}
-            className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+            disabled={isSharing}
+            className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Share2 className="w-4 h-4 mr-2" />
-            Share
+            {isSharing ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <span>Sharing...</span>
+              </>
+            ) : (
+              <>
+                <Share2 className="w-4 h-4 mr-2" />
+                <span>Share</span>
+              </>
+            )}
           </motion.button>
         </div>
 
